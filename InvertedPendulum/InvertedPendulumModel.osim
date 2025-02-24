@@ -35,7 +35,7 @@
 								<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 							</Appearance>
 							<!--Half lengths in X, Y, Z respectively.-->
-							<half_lengths>0.13 0.025000000000000001 0.048500000000000001</half_lengths>
+							<half_lengths>0.5 0.10000000000000001 0.20000000000000001</half_lengths>
 						</Brick>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -62,7 +62,7 @@
 								<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 							</Appearance>
 							<!--Half lengths in X, Y, Z respectively.-->
-							<half_lengths>0.014999999999999999 0.5 0.048500000000000001</half_lengths>
+							<half_lengths>0.059999999999999998 2 0.20000000000000001</half_lengths>
 						</Brick>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -109,7 +109,7 @@
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 							<socket_parent>/bodyset/Base</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-							<translation>0 -0.025000000000000001 0</translation>
+							<translation>0 -0.10000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
@@ -144,7 +144,7 @@
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 							<socket_parent>/bodyset/Base</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-							<translation>-0.13 0.025000000000000001 0</translation>
+							<translation>-0.5 0.10000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
@@ -159,7 +159,7 @@
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 							<socket_parent>/bodyset/Beam</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-							<translation>0 -0.5 0</translation>
+							<translation>0.059999999999999998 -2 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
@@ -186,8 +186,76 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
+				<HuntCrossleyForce name="BeamBackContactForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>BeamBackContact GroundContact</geometry>
+								<stiffness>100000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.59999999999999998</dynamic_friction>
+								<viscous_friction>0.20000000000000001</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="BeamFrontContactForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>BeamFrontContact GroundContact</geometry>
+								<stiffness>100000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.59999999999999998</dynamic_friction>
+								<viscous_friction>0.20000000000000001</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
 			</objects>
 			<groups />
 		</ForceSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet name="contactgeometryset">
+			<objects>
+				<ContactSphere name="BeamBackContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Beam</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>-0.059999999999999998 2 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.040000000000000001</radius>
+				</ContactSphere>
+				<ContactSphere name="BeamFrontContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Beam</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0.059999999999999998 2 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.040000000000000001</radius>
+				</ContactSphere>
+				<ContactHalfSpace name="GroundContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/ground</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0.025000000000000001 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 -1.5700000000000001</orientation>
+				</ContactHalfSpace>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>
