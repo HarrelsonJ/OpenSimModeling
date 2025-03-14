@@ -1,6 +1,5 @@
-%% Clear Workspace
-clear all; close all; clc;
-
+%% Define function to build inverted pendulum
+function osimModel = buildInvertedPendulumModel()
 %% Import OpenSim Libraries into Matlab
 import org.opensim.modeling.*
 
@@ -64,7 +63,7 @@ osimModel.addBody(beam);
 % Make and add a pinjoint to connect the beam to the base
 locationInParent    = Vec3(-footLength/2,footHeight/2,0);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(beamLen/2,-beamHeight/2,0);
+locationInChild     = Vec3(beamLength/2,-beamHeight/2,0);
 orientationInChild  = Vec3(0,0,0);
 beamToBase = PinJoint("BeamToBase", base, locationInParent, ...
     orientationInParent, beam, locationInChild, orientationInChild);
@@ -75,17 +74,21 @@ Angle_rz.setName('Angle_rz');
 Angle_rz.setDefaultValue(0);
 Angle_rz.setDefaultSpeedValue(0);
 
+% Get coordinate for ankle exo actuator
+torqueCoord = beamToBase.updCoordinate();
+torqueCoord.setName("ankle_angle");
 
 osimModel.addJoint(beamToBase);
 
 %% Ankle Exo
-torqueAxis = Vec3(0, 0, 1.0);
-ankleExo = TorqueActuator();
+
+ankleExo = CoordinateActuator();
+ankleExo.setCoordinate(torqueCoord)
 ankleExo.setName('AnkleExo');
-ankleExo.setBodyA(base);
-ankleExo.setBodyB(beam);
-ankleExo.setAxis(Vec3(0, 0, 1)); % Torque around Z-axis
 ankleExo.setOptimalForce(1.0);
+ankleExo.setMinControl(-100);
+ankleExo.setMaxControl(100);
+
 
 % Add actuator to model
 osimModel.addForce(ankleExo);
@@ -198,8 +201,10 @@ osimModel.addForce(HuntCrossleyFrontBeam);
 
 
 %% Initialize the System (checks model consistency).
+osimModel.finalizeConnections();
 osimModel.initSystem();
 
 % Save the model to a file
 osimModel.print('InvertedPendulumModel.osim');
 display(['InvertedPendulumModel.osim printed!']);
+end

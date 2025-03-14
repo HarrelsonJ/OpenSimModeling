@@ -67,6 +67,8 @@
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
 					<mass>5</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
 					<inertia>1 1 1 0 0 0</inertia>
 				</Body>
@@ -170,17 +172,27 @@
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
 		<ControllerSet name="controllerset">
-			<objects />
+			<objects>
+				<PrescribedController name="LinearRamp_Controller">
+					<!--The names of the model actuators that this controller will control.The keyword ALL indicates the controller will control all the actuators in the model-->
+					<actuator_list>AnkleExo</actuator_list>
+					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
+					<FunctionSet name="ControlFunctions">
+						<objects>
+							<LinearFunction>
+								<coefficients> 500 10</coefficients>
+							</LinearFunction>
+						</objects>
+						<groups />
+					</FunctionSet>
+				</PrescribedController>
+			</objects>
 			<groups />
 		</ControllerSet>
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet name="forceset">
 			<objects>
 				<CoordinateActuator name="AnkleExo">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-100</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>100</max_control>
 					<!--Name of the generalized coordinate to which the actuator applies.-->
 					<coordinate>ankle_angle</coordinate>
 					<!--The maximum generalized force produced by this actuator.-->

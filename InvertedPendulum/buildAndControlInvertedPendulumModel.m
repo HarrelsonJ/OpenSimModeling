@@ -1,5 +1,5 @@
-%% Clear Workspace
-clear all; close all; clc;
+%% Reset workspace
+close all; clear; clc;
 
 %% Import OpenSim Libraries into Matlab
 import org.opensim.modeling.*
@@ -37,7 +37,6 @@ base.attachGeometry(baseGeometry);
 % Add Body to the Model
 osimModel.addBody(base);
 
-% Section: Create the Platform Joint
 % Make and add a Weld joint for the base Body
 locationInParent    = Vec3(0,0,0);
 orientationInParent = Vec3(0,0,0);
@@ -49,15 +48,18 @@ baseToGround = WeldJoint('BaseToGround', ground, locationInParent, ...
 osimModel.addJoint(baseToGround);
 
 % Define beam
-beam = Body();
-beam.setName('Beam');
-beam.setMass(5);
-beam.setInertia( Inertia(1,1,1,0,0,0) );
+beam = Body('Beam', ... % Name
+            5, ... % Mass (kg)
+            Vec3(0), ... % Center of mass location in body frame)
+            Inertia(1)... % Inertia
+        );
 
 % Add geometry to the body
 beamGeometry = Brick( Vec3(beamLength/2,beamHeight/2, beamWidth/2) );
 beamGeometry.setColor( Vec3(0.8, 0.1, 0.1) );
 beam.attachGeometry(beamGeometry);
+
+beam.get_inertia()
 
 osimModel.addBody(beam);
 
@@ -75,20 +77,41 @@ Angle_rz.setName('Angle_rz');
 Angle_rz.setDefaultValue(0);
 Angle_rz.setDefaultSpeedValue(0);
 
+% Get coordinate for ankle exo actuator
+torqueCoord = beamToBase.upd_coordinates(0);
+torqueCoord.setName("ankle_angle");
 
 osimModel.addJoint(beamToBase);
 
 %% Ankle Exo
-torqueAxis = Vec3(0, 0, 1.0);
-ankleExo = TorqueActuator();
+ankleExo = CoordinateActuator();
+ankleExo.setCoordinate(torqueCoord)
 ankleExo.setName('AnkleExo');
-ankleExo.setBodyA(base);
-ankleExo.setBodyB(beam);
-ankleExo.setAxis(Vec3(0, 0, 1)); % Torque around Z-axis
 ankleExo.setOptimalForce(1.0);
+
 
 % Add actuator to model
 osimModel.addForce(ankleExo);
+
+%% Ankle Exo Controller
+initialTime = 0.0;
+finalTime = 3.0;
+% PrescribedController defines control law as function of time
+ankleExoController = PrescribedController();
+ankleExoController.setName('LinearRamp_Controller');
+ankleExoController.setActuators(osimModel.updActuators());
+
+% Create linear function
+slopeAndIntercept=ArrayDouble(0.0, 2);
+slopeAndIntercept.setitem(0, 500) % Define slope
+slopeAndIntercept.setitem(1, 10) % Define intercept
+func = LinearFunction(slopeAndIntercept);
+fprintf('Slope: %f\n', func.getSlope());
+% Confirm that name is actuator name not code variable
+ankleExoController.prescribeControlForActuator('AnkleExo', func)
+
+% Add controller to model
+osimModel.addController(ankleExoController);
 
 %%
 contactSphereRadius = 0.04;
@@ -198,8 +221,9 @@ osimModel.addForce(HuntCrossleyFrontBeam);
 
 
 %% Initialize the System (checks model consistency).
+osimModel.finalizeConnections();
 osimModel.initSystem();
 
 % Save the model to a file
-osimModel.print('InvertedPendulumModel.osim');
-display(['InvertedPendulumModel.osim printed!']);
+osimModel.print('InvertedPendulumModel_Control.osim');
+display(['InvertedPendulumModel_Control.osim printed!']);
