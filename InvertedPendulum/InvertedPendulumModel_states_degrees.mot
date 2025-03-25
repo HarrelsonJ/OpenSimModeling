@@ -1,0 +1,24 @@
+InvertedPendulumModel_states
+version=1
+nRows=10
+nColumns=3
+inDegrees=yes
+
+# SIMM Motion File Header:
+name InvertedPendulumModel_states
+datacolumns 3
+datarows 10
+otherdata 1
+range 0.000000 5.000000
+endheader
+time	/jointset/BeamToBase/ankle_angle/value	/jointset/BeamToBase/ankle_angle/speed
+      0.00000000	      0.41941928	     -0.00005491
+      0.01000000	      0.41941870	     -0.00006144
+      0.06000000	      0.41941492	     -0.00008795
+      0.31000000	      0.41938742	     -0.00010625
+      1.31000000	      0.41933305	      0.00053246
+      2.31000000	      0.41926708	     -0.00210081
+      2.91274999	      0.41931222	      0.00115829
+      3.51549998	      0.41943788	     -0.00054434
+      4.51549998	      0.41929852	      0.00249452
+      5.00000000	      0.41957849	     -0.00073832

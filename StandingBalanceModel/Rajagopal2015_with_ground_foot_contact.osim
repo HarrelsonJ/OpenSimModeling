@@ -13660,6 +13660,18 @@
 					<!--The maximum generalized force produced by this actuator.-->
 					<optimal_force>10</optimal_force>
 				</CoordinateActuator>
+				<CoordinateActuator name="AnkleExo_r">
+					<!--Name of the generalized coordinate to which the actuator applies.-->
+					<coordinate>ankle_angle_r</coordinate>
+					<!--The maximum generalized force produced by this actuator.-->
+					<optimal_force>1</optimal_force>
+				</CoordinateActuator>
+				<CoordinateActuator name="AnkleExo_r_0">
+					<!--Name of the generalized coordinate to which the actuator applies.-->
+					<coordinate>ankle_angle_l</coordinate>
+					<!--The maximum generalized force produced by this actuator.-->
+					<optimal_force>1</optimal_force>
+				</CoordinateActuator>
 			</objects>
 			<groups>
 				<ObjectGroup name="right_leg">

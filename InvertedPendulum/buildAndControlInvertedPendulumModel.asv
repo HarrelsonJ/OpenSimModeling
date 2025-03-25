@@ -59,6 +59,8 @@ beamGeometry = Brick( Vec3(beamLength/2,beamHeight/2, beamWidth/2) );
 beamGeometry.setColor( Vec3(0.8, 0.1, 0.1) );
 beam.attachGeometry(beamGeometry);
 
+beam.get_inertia()
+
 osimModel.addBody(beam);
 
 % Make and add a pinjoint to connect the beam to the base
@@ -114,9 +116,6 @@ osimModel.addController(ankleExoController);
 
 %% Setup expression bassed force
 ankleExo = ExpressionBasedCoordinateForce();
-ankleExo.set_coordinate(torqueCoord.getName());
-ankleExo.set_expression("-500*q-50*qdot");
-osimModel.addForce(ankleExo);
 
 %% Build ground contacts
 contactSphereRadius = 0.04;

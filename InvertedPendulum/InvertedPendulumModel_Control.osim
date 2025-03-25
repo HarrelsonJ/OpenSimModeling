@@ -172,32 +172,18 @@
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
 		<ControllerSet name="controllerset">
-			<objects>
-				<PrescribedController name="LinearRamp_Controller">
-					<!--The names of the model actuators that this controller will control.The keyword ALL indicates the controller will control all the actuators in the model-->
-					<actuator_list>AnkleExo</actuator_list>
-					<!--Functions (one per control) describing the controls for actuatorsspecified for this controller.-->
-					<FunctionSet name="ControlFunctions">
-						<objects>
-							<LinearFunction>
-								<coefficients> 500 10</coefficients>
-							</LinearFunction>
-						</objects>
-						<groups />
-					</FunctionSet>
-				</PrescribedController>
-			</objects>
+			<objects />
 			<groups />
 		</ControllerSet>
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet name="forceset">
 			<objects>
-				<CoordinateActuator name="AnkleExo">
-					<!--Name of the generalized coordinate to which the actuator applies.-->
+				<ExpressionBasedCoordinateForce name="expressionbasedcoordinateforce">
+					<!--Coordinate (name) to apply force to.-->
 					<coordinate>ankle_angle</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>1</optimal_force>
-				</CoordinateActuator>
+					<!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+					<expression>-500*q-0.5*qdot</expression>
+				</ExpressionBasedCoordinateForce>
 				<HuntCrossleyForce name="BeamBackContactForce">
 					<!--Material properties.-->
 					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">

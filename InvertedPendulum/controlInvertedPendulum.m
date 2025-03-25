@@ -11,10 +11,10 @@ problem = study.updProblem();
 problem.setModel(buildInvertedPendulumModel());
 
 
-finalTime = 5.0;
+finalTime = 2.0;
 problem.setTimeBounds(0, finalTime);
-problem.setStateInfo("/jointset/BeamToBase/ankle_angle/value",[-90, 90], -5, 0);
-problem.setStateInfo("/jointset/BeamToBase/ankle_angle/speed",[-300, 300], 0, 0);
+problem.setStateInfo("/jointset/BeamToBase/ankle_angle/value",[deg2rad(-90), deg2rad(90)], deg2rad(-5), 0);
+problem.setStateInfo("/jointset/BeamToBase/ankle_angle/speed",[deg2rad(-300), deg2rad(300)], 0, 0);
 problem.setControlInfo("/forceset/AnkleExo", [-400, 400]);
 
 % Create a time vector from 0 to 5 seconds with 0.05 second intervals
@@ -34,19 +34,21 @@ table.addTableMetaDataString("inDegrees", "yes");
 tableProcessor = TableProcessor(table);
 
 stateGoal = MocoStateTrackingGoal("ref_tracking");
+stateGoal.setWeight(10);
 stateGoal.setReference(tableProcessor);
-problem.addGoal(stateGoal)
+%problem.addGoal(stateGoal)
 
-effortGoal = MocoControlGoal("effort", 0.001);
+effortGoal = MocoControlGoal("effort", 1);
 problem.addGoal(effortGoal);
 
 solver = study.initCasADiSolver();
-solver.set_num_mesh_intervals(100);
+solver.set_num_mesh_intervals(50);
 solver.set_transcription_scheme("hermite-simpson")
 solver.set_optim_constraint_tolerance(1e-3);
 solver.set_optim_convergence_tolerance(1e-3);
 
-guess = solver.createGuess(); guess.randomizeAdd();
+guess = solver.createGuess();
+%guess.randomizeAdd();
 solver.setGuess(guess);
 
 % If we haven't already solved.
