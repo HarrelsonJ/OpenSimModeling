@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40500">
-	<Model name="InvertedPendulumModel">
+	<Model name="InvertedPendulumModelWithController">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
 			<!--The geometry used to display the axes of this Frame.-->
@@ -161,7 +161,7 @@
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 							<socket_parent>/bodyset/Beam</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-							<translation>0.059999999999999998 -2 0</translation>
+							<translation>-0.059999999999999998 -2 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 							<orientation>0 0 0</orientation>
 						</PhysicalOffsetFrame>
@@ -178,12 +178,22 @@
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet name="forceset">
 			<objects>
-				<ExpressionBasedCoordinateForce name="expressionbasedcoordinateforce">
+				<ExpressionBasedCoordinateForce name="AnkleExo">
 					<!--Coordinate (name) to apply force to.-->
 					<coordinate>ankle_angle</coordinate>
 					<!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
-					<expression>-500*q-0.5*qdot</expression>
+					<expression>-500*q-50*qdot</expression>
 				</ExpressionBasedCoordinateForce>
+				<CoordinateActuator name="ankle_torque">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-100</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>100</max_control>
+					<!--Name of the generalized coordinate to which the actuator applies.-->
+					<coordinate>ankle_angle</coordinate>
+					<!--The maximum generalized force produced by this actuator.-->
+					<optimal_force>1</optimal_force>
+				</CoordinateActuator>
 				<HuntCrossleyForce name="BeamBackContactForce">
 					<!--Material properties.-->
 					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">

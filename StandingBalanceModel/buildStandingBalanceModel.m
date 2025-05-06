@@ -9,25 +9,23 @@ model = Model('Rajagopal2015.osim');
 
 ankle_r = model.getJointSet().get("ankle_r");
 ankle_angle_r = ankle_r.upd_coordinates(0);
-ankleExo_r = CoordinateActuator();
-ankleExo_r.setCoordinate(ankle_angle_r);
+ankleExo_r = ExpressionBasedCoordinateForce();
+ankleExo_r.set_coordinate(ankle_angle_r.getName());
+ankleExo_r.set_expression("-500*q-50*qdot");
 ankleExo_r.setName('AnkleExo_r');
-ankleExo_r.setOptimalForce(1.0);
 
 % Add actuator to model
 model.addForce(ankleExo_r);
 
 ankle_l = model.getJointSet().get("ankle_l");
 ankle_angle_l = ankle_l.upd_coordinates(0);
-ankleExo_l = CoordinateActuator();
-ankleExo_l.setCoordinate(ankle_angle_l)
+ankleExo_l = ExpressionBasedCoordinateForce();
+ankleExo_l.set_coordinate(ankle_angle_l.getName())
+ankleExo_l.set_expression("-500*q-50*qdot");
 ankleExo_l.setName('AnkleExo_r');
-ankleExo_l.setOptimalForce(1.0);
 
 % Add actuator to model
 model.addForce(ankleExo_l);
-
-%% Add controllers for ankle actuators
 
 
 %% Define and build ground foot contact forces

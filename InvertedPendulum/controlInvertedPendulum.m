@@ -1,3 +1,4 @@
+
 %% Reset workspace
 close all; clear; clc;
 import org.opensim.modeling.*
@@ -8,14 +9,17 @@ study.setName("inverted_pendulum_balancing");
 
 problem = study.updProblem();
 
-problem.setModel(buildInvertedPendulumModel());
+% problem.setModel(buildAndControlInvertedPendulumWithFootContacts());
+% problem.setModel(buildInvertedPendulumModel());
+model = buildAndControlInvertedPendulumModel();
+problem.setModel(model);
 
 
 finalTime = 2.0;
 problem.setTimeBounds(0, finalTime);
 problem.setStateInfo("/jointset/BeamToBase/ankle_angle/value",[deg2rad(-90), deg2rad(90)], deg2rad(-5), 0);
 problem.setStateInfo("/jointset/BeamToBase/ankle_angle/speed",[deg2rad(-300), deg2rad(300)], 0, 0);
-problem.setControlInfo("/forceset/AnkleExo", [-400, 400]);
+problem.setControlInfo("/forceset/ankle_torque", [-400, 400]);
 
 % Create a time vector from 0 to 5 seconds with 0.05 second intervals
 ref_angle.time = 0:0.05:finalTime;

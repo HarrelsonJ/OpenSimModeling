@@ -63,7 +63,7 @@ osimModel.addBody(beam);
 % Make and add a pinjoint to connect the beam to the base
 locationInParent    = Vec3(-footLength/2,footHeight/2,0);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(beamLength/2,-beamHeight/2,0);
+locationInChild     = Vec3(-beamLength/2,-beamHeight/2,0);
 orientationInChild  = Vec3(0,0,0);
 beamToBase = PinJoint("BeamToBase", base, locationInParent, ...
     orientationInParent, beam, locationInChild, orientationInChild);
@@ -84,7 +84,7 @@ osimModel.addJoint(beamToBase);
 
 ankleExo = CoordinateActuator();
 ankleExo.setCoordinate(torqueCoord)
-ankleExo.setName('AnkleExo');
+ankleExo.setName('ankle_torque');
 ankleExo.setOptimalForce(1.0);
 ankleExo.setMinControl(-100);
 ankleExo.setMaxControl(100);

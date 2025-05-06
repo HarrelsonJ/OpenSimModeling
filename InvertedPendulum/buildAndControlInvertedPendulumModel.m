@@ -1,6 +1,4 @@
-%% Reset workspace
-close all; clear; clc;
-
+wlfunction model=buildAndControlInvertedPendulumModel()
 %% Import OpenSim Libraries into Matlab
 import org.opensim.modeling.*
 
@@ -14,14 +12,14 @@ beamWidth = footWidth;% m
 beamHeight = 4.00; % m
 
 %% Instantiate an (empty) OpenSim Model
-osimModel = Model();
-osimModel.setName('InvertedPendulumModel');
+model = Model();
+model.setName('InvertedPendulumModelWithController');
 
 % Get a reference to the ground object
-ground = osimModel.getGround();
+ground = model.getGround();
 
 % Define the acceleration of gravity
-osimModel.setGravity(Vec3(0, -9.80665, 0));
+model.setGravity(Vec3(0, -9.80665, 0));
 
 % Define Base
 base = Body();
@@ -35,7 +33,7 @@ baseGeometry.setColor( Vec3(0.8, 0.1, 0.1) );
 base.attachGeometry(baseGeometry);
 
 % Add Body to the Model
-osimModel.addBody(base);
+model.addBody(base);
 
 % Make and add a Weld joint for the base Body
 locationInParent    = Vec3(0,0,0);
@@ -45,7 +43,7 @@ orientationInChild  = Vec3(0,0,0);
 baseToGround = WeldJoint('BaseToGround', ground, locationInParent, ...
     orientationInParent, base, locationInChild, orientationInChild);
 
-osimModel.addJoint(baseToGround);
+model.addJoint(baseToGround);
 
 % Define beam
 beam = Body('Beam', ... % Name
@@ -59,12 +57,12 @@ beamGeometry = Brick( Vec3(beamLength/2,beamHeight/2, beamWidth/2) );
 beamGeometry.setColor( Vec3(0.8, 0.1, 0.1) );
 beam.attachGeometry(beamGeometry);
 
-osimModel.addBody(beam);
+model.addBody(beam);
 
 % Make and add a pinjoint to connect the beam to the base
 locationInParent    = Vec3(-footLength/2,footHeight/2,0);
 orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(beamLength/2,-beamHeight/2,0);
+locationInChild     = Vec3(-beamLength/2,-beamHeight/2,0);
 orientationInChild  = Vec3(0,0,0);
 beamToBase = PinJoint("BeamToBase", base, locationInParent, ...
     orientationInParent, beam, locationInChild, orientationInChild);
@@ -79,44 +77,25 @@ Angle_rz.setDefaultSpeedValue(0);
 torqueCoord = beamToBase.upd_coordinates(0);
 torqueCoord.setName("ankle_angle");
 
-osimModel.addJoint(beamToBase);
-
-%% Ankle Exo and Prescribed Controller
-%{
-ankleExo = CoordinateActuator();
-ankleExo.setCoordinate(torqueCoord)
-ankleExo.setName('AnkleExo');
-ankleExo.setOptimalForce(1.0);
-
-
-% Add actuator to model
-osimModel.addForce(ankleExo);
-
-initialTime = 0.0;
-finalTime = 3.0;
-% PrescribedController defines control law as function of time
-ankleExoController = PrescribedController();
-ankleExoController.setName('LinearRamp_Controller');
-ankleExoController.setActuators(osimModel.updActuators());
-
-% Create linear function
-slopeAndIntercept=ArrayDouble(0.0, 2);
-slopeAndIntercept.setitem(0, 500) % Define slope
-slopeAndIntercept.setitem(1, 10) % Define intercept
-func = LinearFunction(slopeAndIntercept);
-fprintf('Slope: %f\n', func.getSlope());
-% Confirm that name is actuator name not code variable
-ankleExoController.prescribeControlForActuator('AnkleExo', func)
-
-% Add controller to model
-osimModel.addController(ankleExoController);
-%}
+model.addJoint(beamToBase);
 
 %% Setup expression bassed force
 ankleExo = ExpressionBasedCoordinateForce();
 ankleExo.set_coordinate(torqueCoord.getName());
 ankleExo.set_expression("-500*q-50*qdot");
-osimModel.addForce(ankleExo);
+ankleExo.setName('AnkleExo');
+model.addForce(ankleExo);
+
+ankle_torque = CoordinateActuator();
+ankle_torque.setCoordinate(torqueCoord)
+ankle_torque.setName('ankle_torque');
+ankle_torque.setOptimalForce(1.0);
+ankle_torque.setMinControl(-100);
+ankle_torque.setMaxControl(100);
+
+
+% Add actuator to model
+model.addForce(ankle_torque);
 
 %% Build ground contacts
 contactSphereRadius = 0.04;
@@ -127,14 +106,14 @@ beamBackContactSphere.setRadius(contactSphereRadius);
 beamBackContactSphere.setLocation( Vec3(-beamLength/2, beamHeight/2, 0) );
 beamBackContactSphere.setFrame(beam);
 beamBackContactSphere.setName('BeamBackContact');
-osimModel.addContactGeometry(beamBackContactSphere);
+model.addContactGeometry(beamBackContactSphere);
 
 beamFrontContactSphere = ContactSphere();
 beamFrontContactSphere.setRadius(contactSphereRadius);
 beamFrontContactSphere.setLocation( Vec3(beamLength/2, beamHeight/2, 0) );
 beamFrontContactSphere.setFrame(beam);
 beamFrontContactSphere.setName('BeamFrontContact');
-osimModel.addContactGeometry(beamFrontContactSphere);
+model.addContactGeometry(beamFrontContactSphere);
 
 % Create a contact mesh for the base body
 % baseMeshFile = 'base_mesh.STL';
@@ -163,7 +142,7 @@ groundContactSpace = ContactHalfSpace(groundContactLocation,...
                                        groundContactOrientation,...
                                        ground);
 groundContactSpace.setName('GroundContact');
-osimModel.addContactGeometry(groundContactSpace);
+model.addContactGeometry(groundContactSpace);
 
 %% --- Add a Contact Force (HuntCrossleyForce) ---
 % Define parameters for the HuntCrossleyForce.
@@ -184,7 +163,7 @@ HuntCrossleyBackBeam.setStaticFriction(staticFriction);
 HuntCrossleyBackBeam.setDynamicFriction(dynamicFriction);
 HuntCrossleyBackBeam.setViscousFriction(viscousFriction);
 HuntCrossleyBackBeam.setTransitionVelocity(transitionVelocity);
-osimModel.addForce(HuntCrossleyBackBeam);
+model.addForce(HuntCrossleyBackBeam);
 
 HuntCrossleyFrontBeam = HuntCrossleyForce();
 HuntCrossleyFrontBeam.setName('BeamFrontContactForce');
@@ -196,7 +175,7 @@ HuntCrossleyFrontBeam.setStaticFriction(staticFriction);
 HuntCrossleyFrontBeam.setDynamicFriction(dynamicFriction);
 HuntCrossleyFrontBeam.setViscousFriction(viscousFriction);
 HuntCrossleyFrontBeam.setTransitionVelocity(transitionVelocity);
-osimModel.addForce(HuntCrossleyFrontBeam);
+model.addForce(HuntCrossleyFrontBeam);
 
 % Create the HuntCrossleyForce to compute forces between the beam and the ground.
 % HuntCrossleyBeam = HuntCrossleyForce();
@@ -226,9 +205,11 @@ osimModel.addForce(HuntCrossleyFrontBeam);
 
 
 %% Initialize the System (checks model consistency).
-osimModel.finalizeConnections();
-osimModel.initSystem();
+model.finalizeConnections();
+model.initSystem();
 
 % Save the model to a file
-osimModel.print('InvertedPendulumModel_Control.osim');
+model.print('InvertedPendulumModel_Control.osim');
 display(['InvertedPendulumModel_Control.osim printed!']);
+
+end
